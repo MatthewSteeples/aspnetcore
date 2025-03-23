@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
-public class JObjectAdapter : IAdapter
+public class JsonObjectAdapter : IAdapter
 {
     public virtual bool TryAdd(
         object target,

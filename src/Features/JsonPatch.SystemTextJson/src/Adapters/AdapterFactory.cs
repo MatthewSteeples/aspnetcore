@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 using Microsoft.AspNetCore.Shared;
 
@@ -23,7 +24,7 @@ public class AdapterFactory : IAdapterFactory
 
         return target switch
         {
-            //JsonObject => new ObjectAdapter(),
+            JsonObject => new JsonObjectAdapter(),
             IList => new ListAdapter(),
             _ => new PocoAdapter()
         };
