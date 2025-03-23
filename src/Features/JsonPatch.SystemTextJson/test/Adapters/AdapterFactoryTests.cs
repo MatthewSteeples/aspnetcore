@@ -18,7 +18,7 @@ public class AdapterFactoryTests
         AdapterFactory factory = new AdapterFactory();
 
         //Act:
-        IAdapter adapter = factory.Create(new List<string>(), new DefaultJsonTypeInfoResolver());
+        IAdapter adapter = factory.Create(new List<string>());
 
         // Assert
         Assert.Equal(typeof(ListAdapter), adapter.GetType());
@@ -31,7 +31,7 @@ public class AdapterFactoryTests
         AdapterFactory factory = new AdapterFactory();
 
         //Act:
-        IAdapter adapter = factory.Create(new Dictionary<string, string>(), new DefaultJsonTypeInfoResolver());
+        IAdapter adapter = factory.Create(new Dictionary<string, string>());
 
         // Assert
         Assert.Equal(typeof(DictionaryAdapter<string, string>), adapter.GetType());
@@ -47,7 +47,7 @@ public class AdapterFactoryTests
         AdapterFactory factory = new AdapterFactory();
 
         //Act:
-        IAdapter adapter = factory.Create(new PocoModel(), new DefaultJsonTypeInfoResolver());
+        IAdapter adapter = factory.Create(new PocoModel());
 
         // Assert
         Assert.Equal(typeof(PocoAdapter), adapter.GetType());

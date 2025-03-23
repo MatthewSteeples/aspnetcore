@@ -30,8 +30,9 @@ public class HeterogenousCollectionTests
 
         var patchDocument = new JsonPatchDocument
         {
-            TypeInfoResolver = new CanvasContractResolver()
+            SerializerOptions = JsonSerializerOptions.Default
         };
+        patchDocument.SerializerOptions.TypeInfoResolverChain.Add(new CanvasContractResolver());
 
         patchDocument.Add("/Items/-", circleJObject);
 

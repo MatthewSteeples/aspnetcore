@@ -3,8 +3,6 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -13,14 +11,14 @@ public class JObjectAdapter : IAdapter
     public virtual bool TryAdd(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
         // Set the property specified by the `segment` argument to the given `value` of the `target` object.
         var obj = (JsonObject)target;
 
-        obj[segment] = value != null ? JsonSerializer.SerializeToNode(value) : new JsonObject();
+        obj[segment] = value != null ? JsonSerializer.SerializeToNode(value, serializerOptions) : new JsonObject();
 
         errorMessage = null;
         return true;
@@ -29,7 +27,7 @@ public class JObjectAdapter : IAdapter
     public virtual bool TryGet(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         out object value,
         out string errorMessage)
     {
@@ -50,7 +48,7 @@ public class JObjectAdapter : IAdapter
     public virtual bool TryRemove(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         out string errorMessage)
     {
         var obj = (JsonObject)target;
@@ -68,7 +66,7 @@ public class JObjectAdapter : IAdapter
     public virtual bool TryReplace(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
@@ -89,7 +87,7 @@ public class JObjectAdapter : IAdapter
     public virtual bool TryTest(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
@@ -107,7 +105,7 @@ public class JObjectAdapter : IAdapter
             return false;
         }
 
-        if (!JsonObject.DeepEquals(JsonSerializer.SerializeToNode(currentValue), JsonSerializer.SerializeToNode(value)))
+        if (!JsonObject.DeepEquals(JsonSerializer.SerializeToNode(currentValue, serializerOptions), JsonSerializer.SerializeToNode(value, serializerOptions)))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);
             return false;
@@ -120,11 +118,11 @@ public class JObjectAdapter : IAdapter
     public virtual bool TryTraverse(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         out object nextTarget,
         out string errorMessage)
     {
-        var obj = (JsonObject)JsonSerializer.SerializeToNode(target);
+        var obj = (JsonObject)JsonSerializer.SerializeToNode(target, serializerOptions);
 
         if (!obj.TryGetPropertyValue(segment, out var nextTargetToken))
         {

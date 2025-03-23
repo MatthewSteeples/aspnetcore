@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Text.Json.Serialization.Metadata;
+using System.Text.Json;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
@@ -14,16 +14,16 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 public class ObjectVisitor
 {
     private readonly IAdapterFactory _adapterFactory;
-    private readonly IJsonTypeInfoResolver _typeInfoResolver;
+    private readonly JsonSerializerOptions _serializerOptions;
     private readonly ParsedPath _path;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ObjectVisitor"/>.
     /// </summary>
     /// <param name="path">The path of the JsonPatch operation</param>
-    /// <param name="typeInfoResolver">The <see cref="IJsonTypeInfoResolver"/>.</param>
-    public ObjectVisitor(ParsedPath path, IJsonTypeInfoResolver typeInfoResolver)
-        : this(path, typeInfoResolver, AdapterFactory.Default)
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
+    public ObjectVisitor(ParsedPath path, JsonSerializerOptions serializerOptions)
+        : this(path, serializerOptions, AdapterFactory.Default)
     {
     }
 
@@ -31,12 +31,12 @@ public class ObjectVisitor
     /// Initializes a new instance of <see cref="ObjectVisitor"/>.
     /// </summary>
     /// <param name="path">The path of the JsonPatch operation</param>
-    /// <param name="typeInfoResolver">The <see cref="IJsonTypeInfoResolver"/>.</param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
     /// <param name="adapterFactory">The <see cref="IAdapterFactory"/> to use when creating adaptors.</param>
-    public ObjectVisitor(ParsedPath path, IJsonTypeInfoResolver typeInfoResolver, IAdapterFactory adapterFactory)
+    public ObjectVisitor(ParsedPath path, JsonSerializerOptions serializerOptions, IAdapterFactory adapterFactory)
     {
         _path = path;
-        _typeInfoResolver = typeInfoResolver ?? throw new ArgumentNullException(nameof(typeInfoResolver));
+        _serializerOptions = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
         _adapterFactory = adapterFactory ?? throw new ArgumentNullException(nameof(adapterFactory));
     }
 
@@ -54,7 +54,7 @@ public class ObjectVisitor
         // Traverse until the penultimate segment to get the target object and adapter
         for (var i = 0; i < _path.Segments.Count - 1; i++)
         {
-            if (!adapter.TryTraverse(target, _path.Segments[i], _typeInfoResolver, out var next, out errorMessage))
+            if (!adapter.TryTraverse(target, _path.Segments[i], _serializerOptions, out var next, out errorMessage))
             {
                 adapter = null;
                 return false;
@@ -77,6 +77,6 @@ public class ObjectVisitor
 
     private IAdapter SelectAdapter(object targetObject)
     {
-        return _adapterFactory.Create(targetObject, _typeInfoResolver);
+        return _adapterFactory.Create(targetObject);
     }
 }

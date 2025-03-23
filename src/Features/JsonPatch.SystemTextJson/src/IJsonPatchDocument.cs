@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization.Metadata;
+using System.Text.Json;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 public interface IJsonPatchDocument
 {
-    IJsonTypeInfoResolver TypeInfoResolver { get; set; }
+    JsonSerializerOptions SerializerOptions { get; set; }
 
     IList<Operation> GetOperations();
 }

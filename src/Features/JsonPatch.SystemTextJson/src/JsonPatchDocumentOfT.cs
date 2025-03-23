@@ -9,7 +9,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
@@ -29,19 +28,19 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
     public List<Operation<TModel>> Operations { get; private set; }
 
     [JsonIgnore]
-    public IJsonTypeInfoResolver TypeInfoResolver { get; set; }
+    public JsonSerializerOptions SerializerOptions { get; set; }
 
     public JsonPatchDocument()
     {
         Operations = new List<Operation<TModel>>();
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+        SerializerOptions = JsonSerializerOptions.Default;
     }
 
     // Create from list of operations
-    public JsonPatchDocument(List<Operation<TModel>> operations, IJsonTypeInfoResolver typeInfoResolver)
+    public JsonPatchDocument(List<Operation<TModel>> operations, JsonSerializerOptions serializerOptions)
     {
         Operations = operations ?? throw new ArgumentNullException(nameof(operations));
-        TypeInfoResolver = typeInfoResolver ?? throw new ArgumentNullException(nameof(typeInfoResolver));
+        SerializerOptions = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
     }
 
     /// <summary>
@@ -577,7 +576,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
     {
         ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
-        ApplyTo(objectToApplyTo, new ObjectAdapter(TypeInfoResolver, null, AdapterFactory.Default));
+        ApplyTo(objectToApplyTo, new ObjectAdapter(SerializerOptions, null, AdapterFactory.Default));
     }
 
     /// <summary>
@@ -587,7 +586,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
     /// <param name="logErrorAction">Action to log errors</param>
     public void ApplyTo(TModel objectToApplyTo, Action<JsonPatchError> logErrorAction)
     {
-        ApplyTo(objectToApplyTo, new ObjectAdapter(TypeInfoResolver, logErrorAction, AdapterFactory.Default), logErrorAction);
+        ApplyTo(objectToApplyTo, new ObjectAdapter(SerializerOptions, logErrorAction, AdapterFactory.Default), logErrorAction);
     }
 
     /// <summary>
@@ -714,7 +713,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
 
     private string GetPropertyNameFromMemberExpression(MemberExpression memberExpression)
     {
-        var jsonObjectContract = TypeInfoResolver.GetTypeInfo(memberExpression.Expression.Type, JsonSerializerOptions.Default);
+        var jsonObjectContract = SerializerOptions.GetTypeInfo(memberExpression.Expression.Type);
         if (jsonObjectContract != null)
         {
             var jsonName = memberExpression.Member.Name;

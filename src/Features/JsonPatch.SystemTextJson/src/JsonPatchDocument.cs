@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
@@ -23,21 +23,21 @@ public class JsonPatchDocument : IJsonPatchDocument
     public List<Operation> Operations { get; private set; }
 
     [JsonIgnore]
-    public IJsonTypeInfoResolver TypeInfoResolver { get; set; }
+    public JsonSerializerOptions SerializerOptions { get; set; }
 
     public JsonPatchDocument()
     {
         Operations = new List<Operation>();
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+        SerializerOptions = JsonSerializerOptions.Default;
     }
 
-    public JsonPatchDocument(List<Operation> operations, IJsonTypeInfoResolver typeInfoResolver)
+    public JsonPatchDocument(List<Operation> operations, JsonSerializerOptions serializerOptions)
     {
         ArgumentNullThrowHelper.ThrowIfNull(operations);
-        ArgumentNullThrowHelper.ThrowIfNull(typeInfoResolver);
+        ArgumentNullThrowHelper.ThrowIfNull(serializerOptions);
 
         Operations = operations;
-        TypeInfoResolver = typeInfoResolver;
+        SerializerOptions = serializerOptions;
     }
 
     /// <summary>
@@ -132,14 +132,14 @@ public class JsonPatchDocument : IJsonPatchDocument
     }
 
     /// <summary>
-    /// Apply this JsonPatchDocument
+    /// Apply this JsonPatchDocument to a specified object.
     /// </summary>
     /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
     public void ApplyTo(object objectToApplyTo)
     {
         ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
-        ApplyTo(objectToApplyTo, new ObjectAdapter(TypeInfoResolver, null, AdapterFactory.Default));
+        ApplyTo(objectToApplyTo, new ObjectAdapter(SerializerOptions, null, AdapterFactory.Default));
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     /// <param name="logErrorAction">Action to log errors</param>
     public void ApplyTo(object objectToApplyTo, Action<JsonPatchError> logErrorAction)
     {
-        ApplyTo(objectToApplyTo, new ObjectAdapter(TypeInfoResolver, logErrorAction, AdapterFactory.Default), logErrorAction);
+        ApplyTo(objectToApplyTo, new ObjectAdapter(SerializerOptions, logErrorAction, AdapterFactory.Default), logErrorAction);
     }
 
     /// <summary>

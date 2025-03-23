@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json.Serialization.Metadata;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -14,41 +14,41 @@ public interface IAdapter
     bool TryTraverse(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out object nextTarget,
         out string errorMessage);
 
     bool TryAdd(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage);
 
     bool TryRemove(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out string errorMessage);
 
     bool TryGet(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out object value,
         out string errorMessage);
 
     bool TryReplace(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage);
 
     bool TryTest(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage);
 }

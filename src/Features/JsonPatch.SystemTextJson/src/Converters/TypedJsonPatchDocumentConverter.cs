@@ -50,7 +50,7 @@ public class TypedJsonPatchDocumentConverter : JsonPatchDocumentConverter
             targetOperations = JsonSerializer.Deserialize(ref jsonArrayReader, concreteList, options);
 
             // Container target: the typed JsonPatchDocument.
-            var container = (JsonPatchDocument)Activator.CreateInstance(typeToConvert, targetOperations, JsonPatchDocumentConverter.DefaultContractResolver);
+            var container = (JsonPatchDocument)Activator.CreateInstance(typeToConvert, targetOperations, JsonPatchDocumentConverter.DefaultSerializerOptions);
 
             return container;
         }

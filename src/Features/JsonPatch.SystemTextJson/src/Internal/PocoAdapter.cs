@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -19,11 +18,11 @@ public class PocoAdapter : IAdapter
     public virtual bool TryAdd(
         object target,
         string segment,
-        IJsonTypeInfoResolver contractResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -35,7 +34,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, contractResolver, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, jsonSerializerOptions, out var convertedValue))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -50,11 +49,11 @@ public class PocoAdapter : IAdapter
     public virtual bool TryGet(
         object target,
         string segment,
-        IJsonTypeInfoResolver contractResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out object value,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             value = null;
@@ -76,10 +75,10 @@ public class PocoAdapter : IAdapter
     public virtual bool TryRemove(
         object target,
         string segment,
-        IJsonTypeInfoResolver contractResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -109,11 +108,11 @@ public class PocoAdapter : IAdapter
     public virtual bool TryReplace(
         object target,
         string segment,
-        IJsonTypeInfoResolver contractResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -125,7 +124,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, contractResolver, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, jsonSerializerOptions, out var convertedValue))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -140,11 +139,11 @@ public class PocoAdapter : IAdapter
     public virtual bool TryTest(
         object target,
         string segment,
-        IJsonTypeInfoResolver contractResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage)
     {
-        if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+        if (!TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -156,7 +155,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, contractResolver, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, jsonSerializerOptions, out var convertedValue))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -176,7 +175,7 @@ public class PocoAdapter : IAdapter
     public virtual bool TryTraverse(
         object target,
         string segment,
-        IJsonTypeInfoResolver contractResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out object value,
         out string errorMessage)
     {
@@ -187,7 +186,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+        if (TryGetJsonProperty(target, jsonSerializerOptions, segment, out var jsonProperty))
         {
             value = jsonProperty.Get(target);
             errorMessage = null;
@@ -201,11 +200,11 @@ public class PocoAdapter : IAdapter
 
     protected virtual bool TryGetJsonProperty(
         object target,
-        IJsonTypeInfoResolver contractResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         string segment,
         out JsonPropertyInfo jsonProperty)
     {
-        var typeInfo = contractResolver.GetTypeInfo(target.GetType(), JsonSerializerOptions.Default);
+        var typeInfo = jsonSerializerOptions.GetTypeInfo(target.GetType());
         if (typeInfo is not null)
         {
             var pocoProperty = typeInfo
@@ -228,9 +227,9 @@ public class PocoAdapter : IAdapter
         return TryConvertValue(value, propertyType, null, out convertedValue);
     }
 
-    protected virtual bool TryConvertValue(object value, Type propertyType, IJsonTypeInfoResolver contractResolver, out object convertedValue)
+    protected virtual bool TryConvertValue(object value, Type propertyType, JsonSerializerOptions jsonSerializerOptions, out object convertedValue)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType, contractResolver);
+        var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType, jsonSerializerOptions);
         if (!conversionResult.CanBeConverted)
         {
             convertedValue = null;

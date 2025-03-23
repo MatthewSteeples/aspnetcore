@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
@@ -16,27 +16,27 @@ public class ObjectAdapter : IObjectAdapterWithTest
     /// <summary>
     /// Initializes a new instance of <see cref="ObjectAdapter"/>.
     /// </summary>
-    /// <param name="typeInfoResolver">The <see cref="IJsonTypeInfoResolver"/>.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
     /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
     public ObjectAdapter(
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         Action<JsonPatchError> logErrorAction) :
-        this(typeInfoResolver, logErrorAction, Adapters.AdapterFactory.Default)
+        this(jsonSerializerOptions, logErrorAction, Adapters.AdapterFactory.Default)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="ObjectAdapter"/>.
     /// </summary>
-    /// <param name="typeInfoResolver">The <see cref="IJsonTypeInfoResolver"/>.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
     /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
     /// <param name="adapterFactory">The <see cref="IAdapterFactory"/> to use when creating adaptors.</param>
     public ObjectAdapter(
-       IJsonTypeInfoResolver typeInfoResolver,
+       JsonSerializerOptions jsonSerializerOptions,
        Action<JsonPatchError> logErrorAction,
        IAdapterFactory adapterFactory)
     {
-        TypeInfoResolver = typeInfoResolver ?? throw new ArgumentNullException(nameof(typeInfoResolver));
+        SerializerOptions = jsonSerializerOptions ?? throw new ArgumentNullException(nameof(jsonSerializerOptions));
         LogErrorAction = logErrorAction;
         AdapterFactory = adapterFactory ?? throw new ArgumentNullException(nameof(adapterFactory));
     }
@@ -44,7 +44,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
     /// <summary>
     /// Gets or sets the <see cref="IJsonTypeInfoResolver"/>.
     /// </summary>
-    public IJsonTypeInfoResolver TypeInfoResolver { get; }
+    public JsonSerializerOptions SerializerOptions { get; }
 
     /// <summary>
     /// Gets or sets the <see cref="IAdapterFactory"/>
@@ -79,7 +79,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
         ArgumentNullThrowHelper.ThrowIfNull(operation);
 
         var parsedPath = new ParsedPath(path);
-        var visitor = new ObjectVisitor(parsedPath, TypeInfoResolver, AdapterFactory);
+        var visitor = new ObjectVisitor(parsedPath, SerializerOptions, AdapterFactory);
 
         var target = objectToApplyTo;
         // Find the target object and the appropriate adapter
@@ -90,7 +90,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
             return;
         }
 
-        if (!adapter.TryAdd(target, parsedPath.LastSegment, TypeInfoResolver, value, out errorMessage))
+        if (!adapter.TryAdd(target, parsedPath.LastSegment, SerializerOptions, value, out errorMessage))
         {
             var error = CreateOperationFailedError(objectToApplyTo, path, operation, errorMessage);
             ErrorReporter(error);
@@ -110,10 +110,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
             Remove(operation.from, objectToApplyTo, operation);
 
             // add that value to the path location
-            Add(operation.path,
-                propertyValue,
-                objectToApplyTo,
-                operation);
+            Add(operation.path, propertyValue, objectToApplyTo, operation);
         }
     }
 
@@ -135,7 +132,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
     private void Remove(string path, object objectToApplyTo, Operation operationToReport)
     {
         var parsedPath = new ParsedPath(path);
-        var visitor = new ObjectVisitor(parsedPath, TypeInfoResolver, AdapterFactory);
+        var visitor = new ObjectVisitor(parsedPath, SerializerOptions, AdapterFactory);
 
         var target = objectToApplyTo;
         if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
@@ -145,7 +142,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
             return;
         }
 
-        if (!adapter.TryRemove(target, parsedPath.LastSegment, TypeInfoResolver, out errorMessage))
+        if (!adapter.TryRemove(target, parsedPath.LastSegment, SerializerOptions, out errorMessage))
         {
             var error = CreateOperationFailedError(objectToApplyTo, path, operationToReport, errorMessage);
             ErrorReporter(error);
@@ -159,7 +156,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
         ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
         var parsedPath = new ParsedPath(operation.path);
-        var visitor = new ObjectVisitor(parsedPath, TypeInfoResolver, AdapterFactory);
+        var visitor = new ObjectVisitor(parsedPath, SerializerOptions, AdapterFactory);
 
         var target = objectToApplyTo;
         if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
@@ -169,7 +166,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
             return;
         }
 
-        if (!adapter.TryReplace(target, parsedPath.LastSegment, TypeInfoResolver, operation.value, out errorMessage))
+        if (!adapter.TryReplace(target, parsedPath.LastSegment, SerializerOptions, operation.value, out errorMessage))
         {
             var error = CreateOperationFailedError(objectToApplyTo, operation.path, operation, errorMessage);
             ErrorReporter(error);
@@ -189,10 +186,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
             var copyResult = ConversionResultProvider.CopyTo(propertyValue, propertyValue?.GetType());
             if (copyResult.CanBeConverted)
             {
-                Add(operation.path,
-                    copyResult.ConvertedInstance,
-                    objectToApplyTo,
-                    operation);
+                Add(operation.path, copyResult.ConvertedInstance, objectToApplyTo, operation);
             }
             else
             {
@@ -209,7 +203,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
         ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
         var parsedPath = new ParsedPath(operation.path);
-        var visitor = new ObjectVisitor(parsedPath, TypeInfoResolver, AdapterFactory);
+        var visitor = new ObjectVisitor(parsedPath, SerializerOptions, AdapterFactory);
 
         var target = objectToApplyTo;
         if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
@@ -219,7 +213,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
             return;
         }
 
-        if (!adapter.TryTest(target, parsedPath.LastSegment, TypeInfoResolver, operation.value, out errorMessage))
+        if (!adapter.TryTest(target, parsedPath.LastSegment, SerializerOptions, operation.value, out errorMessage))
         {
             var error = CreateOperationFailedError(objectToApplyTo, operation.path, operation, errorMessage);
             ErrorReporter(error);
@@ -240,7 +234,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
         propertyValue = null;
 
         var parsedPath = new ParsedPath(fromLocation);
-        var visitor = new ObjectVisitor(parsedPath, TypeInfoResolver, AdapterFactory);
+        var visitor = new ObjectVisitor(parsedPath, SerializerOptions, AdapterFactory);
 
         var target = objectToGetValueFrom;
         if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
@@ -250,7 +244,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
             return false;
         }
 
-        if (!adapter.TryGet(target, parsedPath.LastSegment, TypeInfoResolver, out propertyValue, out errorMessage))
+        if (!adapter.TryGet(target, parsedPath.LastSegment, SerializerOptions, out propertyValue, out errorMessage))
         {
             var error = CreateOperationFailedError(objectToGetValueFrom, fromLocation, operation, errorMessage);
             ErrorReporter(error);

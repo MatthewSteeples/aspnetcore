@@ -6,8 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
@@ -21,7 +19,7 @@ public class ListAdapter : IAdapter
     public virtual bool TryAdd(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage)
     {
@@ -37,7 +35,7 @@ public class ListAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeArgument, segment, typeInfoResolver, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, typeArgument, segment, jsonSerializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -58,7 +56,7 @@ public class ListAdapter : IAdapter
     public virtual bool TryGet(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out object value,
         out string errorMessage)
     {
@@ -92,7 +90,7 @@ public class ListAdapter : IAdapter
     public virtual bool TryRemove(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out string errorMessage)
     {
         var list = (IList)target;
@@ -123,7 +121,7 @@ public class ListAdapter : IAdapter
     public virtual bool TryReplace(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage)
     {
@@ -139,7 +137,7 @@ public class ListAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeArgument, segment, typeInfoResolver, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, typeArgument, segment, jsonSerializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -160,7 +158,7 @@ public class ListAdapter : IAdapter
     public virtual bool TryTest(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         object value,
         out string errorMessage)
     {
@@ -176,7 +174,7 @@ public class ListAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeArgument, segment, typeInfoResolver, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, typeArgument, segment, jsonSerializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -198,7 +196,7 @@ public class ListAdapter : IAdapter
     public virtual bool TryTraverse(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out object value,
         out string errorMessage)
     {
@@ -249,11 +247,11 @@ public class ListAdapter : IAdapter
         object originalValue,
         Type listTypeArgument,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions jsonSerializerOptions,
         out object convertedValue,
         out string errorMessage)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument, typeInfoResolver);
+        var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument, jsonSerializerOptions);
         if (!conversionResult.CanBeConverted)
         {
             convertedValue = null;

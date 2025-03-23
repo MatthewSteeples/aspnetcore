@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
-using System.Threading;
+using System.Collections;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 using Microsoft.AspNetCore.Shared;
 
@@ -19,19 +16,15 @@ public class AdapterFactory : IAdapterFactory
 
     /// <inheritdoc />
 #pragma warning disable PUB0001
-    public virtual IAdapter Create(object target, IJsonTypeInfoResolver typeInfoResolver)
+    public virtual IAdapter Create(object target)
 #pragma warning restore PUB0001
     {
         ArgumentNullThrowHelper.ThrowIfNull(target);
-        ArgumentNullThrowHelper.ThrowIfNull(typeInfoResolver);
 
-        var jsonContract = typeInfoResolver.GetTypeInfo(target.GetType(), JsonSerializerOptions.Default);
-
-        return jsonContract.Kind switch
+        return target switch
         {
-            JsonTypeInfoKind.Object => new PocoAdapter(),//(),
-            JsonTypeInfoKind.Enumerable => new ListAdapter(),
-            JsonTypeInfoKind.Dictionary => (IAdapter)Activator.CreateInstance(typeof(DictionaryAdapter<,>).MakeGenericType(jsonContract.KeyType, jsonContract.ElementType)),
+            //JsonObject => new ObjectAdapter(),
+            IList => new ListAdapter(),
             _ => new PocoAdapter()
         };
     }

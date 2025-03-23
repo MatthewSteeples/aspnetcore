@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text.Json.Serialization.Metadata;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
@@ -15,12 +15,12 @@ public class ListAdapterTest
     public void Patch_OnArrayObject_Fails()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new[] { 20, 30 };
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, "0", resolver, "40", out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, "0", serializerOptions, "40", out var message);
 
         // Assert
         Assert.False(addStatus);
@@ -31,14 +31,14 @@ public class ListAdapterTest
     public void Patch_OnNonGenericListObject_Fails()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new ArrayList();
         targetObject.Add(20);
         targetObject.Add(30);
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, "-", resolver, "40", out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, "-", serializerOptions, "40", out var message);
 
         // Assert
         Assert.False(addStatus);
@@ -49,13 +49,13 @@ public class ListAdapterTest
     public void Add_WithIndexSameAsNumberOfElements_Works()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<string>() { "James", "Mike" };
         var listAdapter = new ListAdapter();
         var position = targetObject.Count.ToString(CultureInfo.InvariantCulture);
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, position, resolver, "Rob", out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, position, serializerOptions, "Rob", out var message);
 
         // Assert
         Assert.Null(message);
@@ -71,12 +71,12 @@ public class ListAdapterTest
     public void Add_WithOutOfBoundsIndex_Fails(string position)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<string>() { "James", "Mike" };
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, position, resolver, "40", out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, position, serializerOptions, "40", out var message);
 
         // Assert
         Assert.False(addStatus);
@@ -89,12 +89,12 @@ public class ListAdapterTest
     public void Patch_WithInvalidPositionFormat_Fails(string position)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<string>() { "James", "Mike" };
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, position, resolver, "40", out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, position, serializerOptions, "40", out var message);
 
         // Assert
         Assert.False(addStatus);
@@ -124,11 +124,11 @@ public class ListAdapterTest
     public void Add_Appends_AtTheEnd(List<int> targetObject, List<int> expected)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, "-", resolver, "20", out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, "-", serializerOptions, "20", out var message);
 
         // Assert
         Assert.True(addStatus);
@@ -141,12 +141,12 @@ public class ListAdapterTest
     public void Add_NullObject_ToReferenceTypeListWorks()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var listAdapter = new ListAdapter();
         var targetObject = new List<string>() { "James", "Mike" };
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, "-", resolver, value: null, errorMessage: out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, "-", serializerOptions, value: null, errorMessage: out var message);
 
         // Assert
         Assert.True(addStatus);
@@ -161,12 +161,12 @@ public class ListAdapterTest
         // Arrange
         var sDto = new SimpleObject();
         var iDto = new InheritedObject();
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<SimpleObject>() { sDto };
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, "-", resolver, iDto, out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, "-", serializerOptions, iDto, out var message);
 
         // Assert
         Assert.True(addStatus);
@@ -179,12 +179,12 @@ public class ListAdapterTest
     public void Add_NonCompatibleType_Fails()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>() { 10, 20 };
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, "-", resolver, "James", out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, "-", serializerOptions, "James", out var message);
 
         // Assert
         Assert.False(addStatus);
@@ -230,11 +230,11 @@ public class ListAdapterTest
     public void Add_DifferentComplexTypeWorks(IList targetObject, object value, string position, IList expected)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, position, resolver, value, out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, position, serializerOptions, value, out var message);
 
         // Assert
         Assert.True(addStatus);
@@ -285,11 +285,11 @@ public class ListAdapterTest
     public void Add_KeepsObjectReference(IList targetObject, object value, string position, IList expected)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, position, resolver, value, out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, position, serializerOptions, value, out var message);
 
         // Assert
         Assert.True(addStatus);
@@ -305,12 +305,12 @@ public class ListAdapterTest
     public void Get_IndexOutOfBounds(int[] input, string position)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>(input);
         var listAdapter = new ListAdapter();
 
         // Act
-        var getStatus = listAdapter.TryGet(targetObject, position, resolver, out var value, out var message);
+        var getStatus = listAdapter.TryGet(targetObject, position, serializerOptions, out var value, out var message);
 
         // Assert
         Assert.False(getStatus);
@@ -324,12 +324,12 @@ public class ListAdapterTest
     public void Get(int[] input, string position, object expected)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>(input);
         var listAdapter = new ListAdapter();
 
         // Act
-        var getStatus = listAdapter.TryGet(targetObject, position, resolver, out var value, out var message);
+        var getStatus = listAdapter.TryGet(targetObject, position, serializerOptions, out var value, out var message);
 
         // Assert
         Assert.True(getStatus);
@@ -344,12 +344,12 @@ public class ListAdapterTest
     public void Remove_IndexOutOfBounds(int[] input, string position)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>(input);
         var listAdapter = new ListAdapter();
 
         // Act
-        var removeStatus = listAdapter.TryRemove(targetObject, position, resolver, out var message);
+        var removeStatus = listAdapter.TryRemove(targetObject, position, serializerOptions, out var message);
 
         // Assert
         Assert.False(removeStatus);
@@ -363,12 +363,12 @@ public class ListAdapterTest
     public void Remove(int[] input, string position, int[] expected)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>(input);
         var listAdapter = new ListAdapter();
 
         // Act
-        var removeStatus = listAdapter.TryRemove(targetObject, position, resolver, out var message);
+        var removeStatus = listAdapter.TryRemove(targetObject, position, serializerOptions, out var message);
 
         // Assert
         Assert.True(removeStatus);
@@ -379,12 +379,12 @@ public class ListAdapterTest
     public void Replace_NonCompatibleType_Fails()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>() { 10, 20 };
         var listAdapter = new ListAdapter();
 
         // Act
-        var replaceStatus = listAdapter.TryReplace(targetObject, "-", resolver, "James", out var message);
+        var replaceStatus = listAdapter.TryReplace(targetObject, "-", serializerOptions, "James", out var message);
 
         // Assert
         Assert.False(replaceStatus);
@@ -395,12 +395,12 @@ public class ListAdapterTest
     public void Replace_ReplacesValue_AtTheEnd()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>() { 10, 20 };
         var listAdapter = new ListAdapter();
 
         // Act
-        var replaceStatus = listAdapter.TryReplace(targetObject, "-", resolver, "30", out var message);
+        var replaceStatus = listAdapter.TryReplace(targetObject, "-", serializerOptions, "30", out var message);
 
         // Assert
         Assert.True(replaceStatus);
@@ -431,12 +431,12 @@ public class ListAdapterTest
     public void Replace_ReplacesValue_AtGivenPosition(string position, List<int> expected)
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>() { 10, 20 };
         var listAdapter = new ListAdapter();
 
         // Act
-        var replaceStatus = listAdapter.TryReplace(targetObject, position, resolver, "30", out var message);
+        var replaceStatus = listAdapter.TryReplace(targetObject, position, serializerOptions, "30", out var message);
 
         // Assert
         Assert.True(replaceStatus);
@@ -448,12 +448,12 @@ public class ListAdapterTest
     public void Test_DoesNotThrowException_IfTestIsSuccessful()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>() { 10, 20 };
         var listAdapter = new ListAdapter();
 
         // Act
-        var testStatus = listAdapter.TryTest(targetObject, "0", resolver, "10", out var message);
+        var testStatus = listAdapter.TryTest(targetObject, "0", serializerOptions, "10", out var message);
 
         //Assert
         Assert.True(testStatus);
@@ -464,13 +464,13 @@ public class ListAdapterTest
     public void Test_ThrowsJsonPatchException_IfTestFails()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>() { 10, 20 };
         var listAdapter = new ListAdapter();
         var expectedErrorMessage = "The current value '20' at position '1' is not equal to the test value '10'.";
 
         // Act
-        var testStatus = listAdapter.TryTest(targetObject, "1", resolver, "10", out var errorMessage);
+        var testStatus = listAdapter.TryTest(targetObject, "1", serializerOptions, "10", out var errorMessage);
 
         //Assert
         Assert.False(testStatus);
@@ -481,13 +481,13 @@ public class ListAdapterTest
     public void Test_ThrowsJsonPatchException_IfListPositionOutOfBounds()
     {
         // Arrange
-        var resolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var targetObject = new List<int>() { 10, 20 };
         var listAdapter = new ListAdapter();
         var expectedErrorMessage = "The index value provided by path segment '2' is out of bounds of the array size.";
 
         // Act
-        var testStatus = listAdapter.TryTest(targetObject, "2", resolver, "10", out var errorMessage);
+        var testStatus = listAdapter.TryTest(targetObject, "2", serializerOptions, "10", out var errorMessage);
 
         //Assert
         Assert.False(testStatus);

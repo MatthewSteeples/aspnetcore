@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 
 public class JsonPatchDocumentConverter : JsonConverter<JsonPatchDocument>
 {
-    internal static DefaultJsonTypeInfoResolver DefaultContractResolver { get; } = new();
+    internal static JsonSerializerOptions DefaultSerializerOptions { get; } = JsonSerializerOptions.Default;
 
     public override JsonPatchDocument Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -40,7 +40,7 @@ public class JsonPatchDocumentConverter : JsonConverter<JsonPatchDocument>
             }
 
             // container target: the JsonPatchDocument.
-            var container = new JsonPatchDocument(operations, DefaultContractResolver);
+            var container = new JsonPatchDocument(operations, DefaultSerializerOptions);
 
             return container;
         }
@@ -59,12 +59,5 @@ public class JsonPatchDocumentConverter : JsonConverter<JsonPatchDocument>
         }
 
         writer.WriteEndArray();
-    }
-
-    public override bool CanConvert(Type typeToConvert)
-    {
-        if (typeToConvert == typeof(JsonPatchDocument) || typeToConvert == typeof(JsonPatchDocument<>))
-            var result = base.CanConvert(typeToConvert);
-        return result;
     }
 }

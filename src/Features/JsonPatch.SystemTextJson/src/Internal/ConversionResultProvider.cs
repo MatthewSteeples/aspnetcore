@@ -3,7 +3,6 @@
 
 using System;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -18,7 +17,7 @@ public static class ConversionResultProvider
         return ConvertTo(value, typeToConvertTo, null);
     }
 
-    internal static ConversionResult ConvertTo(object value, Type typeToConvertTo, IJsonTypeInfoResolver typeInfoResolver)
+    internal static ConversionResult ConvertTo(object value, Type typeToConvertTo, JsonSerializerOptions jsonSerializerOptions)
     {
         if (value == null)
         {
@@ -33,17 +32,9 @@ public static class ConversionResultProvider
         {
             try
             {
-                if (typeInfoResolver == null)
-                {
-                    var deserialized = JsonSerializer.Deserialize(JsonSerializer.SerializeToDocument(value), typeToConvertTo);
-                    return new ConversionResult(true, deserialized);
-                }
-                else
-                {
-                    var serializerSettings = new JsonSerializerOptions { TypeInfoResolver = typeInfoResolver };
-                    var deserialized = JsonSerializer.Deserialize(JsonSerializer.SerializeToDocument(value), typeToConvertTo, serializerSettings);
-                    return new ConversionResult(true, deserialized);
-                }
+                var serializedDocument = JsonSerializer.SerializeToDocument(value, jsonSerializerOptions);
+                var deserialized = JsonSerializer.Deserialize(serializedDocument, typeToConvertTo, jsonSerializerOptions);
+                return new ConversionResult(true, deserialized);
             }
             catch
             {

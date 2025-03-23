@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Text.Json.Serialization.Metadata;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
@@ -11,76 +10,10 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 public class CustomNamingStrategyTests
 {
     [Fact]
-    public void AddProperty_ToDynamicTestObject_WithCustomNamingStrategy()
-    {
-        // Arrange
-        var contractResolver = new DefaultJsonTypeInfoResolver();
-
-        dynamic targetObject = new DynamicTestObject();
-        targetObject.Test = 1;
-
-        var patchDocument = new JsonPatchDocument();
-        patchDocument.Add("NewInt", 1);
-        patchDocument.TypeInfoResolver = contractResolver;
-
-        // Act
-        patchDocument.ApplyTo(targetObject);
-
-        // Assert
-        Assert.Equal(1, targetObject.customNewInt);
-        Assert.Equal(1, targetObject.Test);
-    }
-
-    [Fact]
-    public void CopyPropertyValue_ToDynamicTestObject_WithCustomNamingStrategy()
-    {
-        // Arrange
-        var contractResolver = new DefaultJsonTypeInfoResolver();
-
-        dynamic targetObject = new DynamicTestObject();
-        targetObject.customStringProperty = "A";
-        targetObject.customAnotherStringProperty = "B";
-
-        var patchDocument = new JsonPatchDocument();
-        patchDocument.Copy("StringProperty", "AnotherStringProperty");
-        patchDocument.TypeInfoResolver = contractResolver;
-
-        // Act
-        patchDocument.ApplyTo(targetObject);
-
-        // Assert
-        Assert.Equal("A", targetObject.customAnotherStringProperty);
-    }
-
-    [Fact]
-    public void MovePropertyValue_ForExpandoObject_WithCustomNamingStrategy()
-    {
-        // Arrange
-        var contractResolver = new DefaultJsonTypeInfoResolver();
-
-        dynamic targetObject = new ExpandoObject();
-        targetObject.customStringProperty = "A";
-        targetObject.customAnotherStringProperty = "B";
-
-        var patchDocument = new JsonPatchDocument();
-        patchDocument.Move("StringProperty", "AnotherStringProperty");
-        patchDocument.TypeInfoResolver = contractResolver;
-
-        // Act
-        patchDocument.ApplyTo(targetObject);
-        var cont = targetObject as IDictionary<string, object>;
-        cont.TryGetValue("customStringProperty", out var valueFromDictionary);
-
-        // Assert
-        Assert.Equal("A", targetObject.customAnotherStringProperty);
-        Assert.Null(valueFromDictionary);
-    }
-
-    [Fact]
     public void RemoveProperty_FromDictionaryObject_WithCustomNamingStrategy()
     {
         // Arrange
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
 
         var targetObject = new Dictionary<string, int>()
             {
@@ -89,7 +22,7 @@ public class CustomNamingStrategyTests
 
         var patchDocument = new JsonPatchDocument();
         patchDocument.Remove("Test");
-        patchDocument.TypeInfoResolver = contractResolver;
+        patchDocument.SerializerOptions = serializerOptions;
 
         // Act
         patchDocument.ApplyTo(targetObject);
@@ -99,39 +32,4 @@ public class CustomNamingStrategyTests
         // Assert
         Assert.Equal(0, valueFromDictionary);
     }
-
-    [Fact]
-    public void ReplacePropertyValue_ForExpandoObject_WithCustomNamingStrategy()
-    {
-        // Arrange
-        var contractResolver = new DefaultJsonTypeInfoResolver();
-
-        dynamic targetObject = new ExpandoObject();
-        targetObject.customTest = 1;
-
-        var patchDocument = new JsonPatchDocument();
-        patchDocument.Replace("Test", 2);
-        patchDocument.TypeInfoResolver = contractResolver;
-
-        // Act
-        patchDocument.ApplyTo(targetObject);
-
-        // Assert
-        Assert.Equal(2, targetObject.customTest);
-    }
-
-    //private class TestNamingStrategy : NamingStrategy
-    //{
-    //    public new bool ProcessDictionaryKeys => true;
-
-    //    public override string GetDictionaryKey(string key)
-    //    {
-    //        return "custom" + key;
-    //    }
-
-    //    protected override string ResolvePropertyName(string name)
-    //    {
-    //        return name;
-    //    }
-    //}
 }

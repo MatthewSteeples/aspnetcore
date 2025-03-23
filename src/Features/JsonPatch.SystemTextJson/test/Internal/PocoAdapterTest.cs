@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson.IntegrationTests;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
@@ -17,14 +13,14 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
         };
 
         // Act
-        var addStatus = adapter.TryAdd(model, "Name", contractResolver, "John", out var errorMessage);
+        var addStatus = adapter.TryAdd(model, "Name", serializerOptions, "John", out var errorMessage);
 
         // Assert
         Assert.Equal("John", model.Name);
@@ -37,7 +33,7 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
@@ -45,7 +41,7 @@ public class PocoAdapterTest
         var expectedErrorMessage = "The target location specified by path segment 'LastName' was not found.";
 
         // Act
-        var addStatus = adapter.TryAdd(model, "LastName", contractResolver, "Smith", out var errorMessage);
+        var addStatus = adapter.TryAdd(model, "LastName", serializerOptions, "Smith", out var errorMessage);
 
         // Assert
         Assert.False(addStatus);
@@ -57,14 +53,14 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
         };
 
         // Act
-        var getStatus = adapter.TryGet(model, "Name", contractResolver, out var value, out var errorMessage);
+        var getStatus = adapter.TryGet(model, "Name", serializerOptions, out var value, out var errorMessage);
 
         // Assert
         Assert.Equal("Joana", value);
@@ -77,7 +73,7 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
@@ -85,7 +81,7 @@ public class PocoAdapterTest
         var expectedErrorMessage = "The target location specified by path segment 'LastName' was not found.";
 
         // Act
-        var getStatus = adapter.TryGet(model, "LastName", contractResolver, out var value, out var errorMessage);
+        var getStatus = adapter.TryGet(model, "LastName", serializerOptions, out var value, out var errorMessage);
 
         // Assert
         Assert.Null(value);
@@ -98,14 +94,14 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
         };
 
         // Act
-        var removeStatus = adapter.TryRemove(model, "Name", contractResolver, out var errorMessage);
+        var removeStatus = adapter.TryRemove(model, "Name", serializerOptions, out var errorMessage);
 
         // Assert
         Assert.Null(model.Name);
@@ -118,7 +114,7 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
@@ -126,7 +122,7 @@ public class PocoAdapterTest
         var expectedErrorMessage = "The target location specified by path segment 'LastName' was not found.";
 
         // Act
-        var removeStatus = adapter.TryRemove(model, "LastName", contractResolver, out var errorMessage);
+        var removeStatus = adapter.TryRemove(model, "LastName", serializerOptions, out var errorMessage);
 
         // Assert
         Assert.False(removeStatus);
@@ -138,14 +134,14 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
         };
 
         // Act
-        var replaceStatus = adapter.TryReplace(model, "Name", contractResolver, "John", out var errorMessage);
+        var replaceStatus = adapter.TryReplace(model, "Name", serializerOptions, "John", out var errorMessage);
 
         // Assert
         Assert.Equal("John", model.Name);
@@ -158,7 +154,7 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Age = 25
@@ -167,7 +163,7 @@ public class PocoAdapterTest
         var expectedErrorMessage = "The value 'TwentySix' is invalid for target location.";
 
         // Act
-        var replaceStatus = adapter.TryReplace(model, "Age", contractResolver, "TwentySix", out var errorMessage);
+        var replaceStatus = adapter.TryReplace(model, "Age", serializerOptions, "TwentySix", out var errorMessage);
 
         // Assert
         Assert.Equal(25, model.Age);
@@ -180,7 +176,7 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
@@ -188,7 +184,7 @@ public class PocoAdapterTest
         var expectedErrorMessage = "The target location specified by path segment 'LastName' was not found.";
 
         // Act
-        var replaceStatus = adapter.TryReplace(model, "LastName", contractResolver, "Smith", out var errorMessage);
+        var replaceStatus = adapter.TryReplace(model, "LastName", serializerOptions, "Smith", out var errorMessage);
 
         // Assert
         Assert.Equal("Joana", model.Name);
@@ -202,6 +198,10 @@ public class PocoAdapterTest
         // Arrange
         var adapter = new PocoAdapter();
         var contractResolver = new RectangleContractResolver();
+        var serializerOptions = new JsonSerializerOptions
+        {
+            TypeInfoResolver = contractResolver
+        };
         var model = new Square()
         {
             Rectangle = new Rectangle()
@@ -211,7 +211,7 @@ public class PocoAdapterTest
         };
 
         // Act
-        var replaceStatus = adapter.TryReplace(model, "Rectangle", contractResolver, "Oval", out var errorMessage);
+        var replaceStatus = adapter.TryReplace(model, "Rectangle", serializerOptions, "Oval", out var errorMessage);
 
         // Assert
         Assert.Equal("Oval", model.Rectangle.RectangleProperty);
@@ -222,14 +222,14 @@ public class PocoAdapterTest
     public void TryTest_DoesNotThrowException_IfTestSuccessful()
     {
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
         };
 
         // Act
-        var testStatus = adapter.TryTest(model, "Name", contractResolver, "Joana", out var errorMessage);
+        var testStatus = adapter.TryTest(model, "Name", serializerOptions, "Joana", out var errorMessage);
 
         // Assert
         Assert.Equal("Joana", model.Name);
@@ -242,7 +242,7 @@ public class PocoAdapterTest
     {
         // Arrange
         var adapter = new PocoAdapter();
-        var contractResolver = new DefaultJsonTypeInfoResolver();
+        var serializerOptions = JsonSerializerOptions.Default;
         var model = new Customer
         {
             Name = "Joana"
@@ -250,7 +250,7 @@ public class PocoAdapterTest
         var expectedErrorMessage = "The current value 'Joana' at path 'Name' is not equal to the test value 'John'.";
 
         // Act
-        var testStatus = adapter.TryTest(model, "Name", contractResolver, "John", out var errorMessage);
+        var testStatus = adapter.TryTest(model, "Name", serializerOptions, "John", out var errorMessage);
 
         // Assert
         Assert.False(testStatus);

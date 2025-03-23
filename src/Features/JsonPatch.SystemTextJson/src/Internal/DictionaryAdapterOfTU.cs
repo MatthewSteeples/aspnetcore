@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -19,11 +17,11 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
     public virtual bool TryAdd(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
-        var contract = typeInfoResolver.GetTypeInfo(target.GetType(), JsonSerializerOptions.Default);
+        var contract = serializerOptions.GetTypeInfo(target.GetType());
         var key = ExtractKeyFromSegment(contract, segment);
         var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -33,7 +31,7 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeInfoResolver, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, serializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -46,11 +44,11 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
     public virtual bool TryGet(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         out object value,
         out string errorMessage)
     {
-        var contract = typeInfoResolver.GetTypeInfo(target.GetType(), JsonSerializerOptions.Default);
+        var contract = serializerOptions.GetTypeInfo(target.GetType());
         var key = ExtractKeyFromSegment(contract, segment);
         var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -75,10 +73,10 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
     public virtual bool TryRemove(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         out string errorMessage)
     {
-        var contract = typeInfoResolver.GetTypeInfo(target.GetType(), JsonSerializerOptions.Default);
+        var contract = serializerOptions.GetTypeInfo(target.GetType());
         var key = ExtractKeyFromSegment(contract, segment);
         var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -101,11 +99,11 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
     public virtual bool TryReplace(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
-        var contract = typeInfoResolver.GetTypeInfo(target.GetType(), JsonSerializerOptions.Default);
+        var contract = serializerOptions.GetTypeInfo(target.GetType());
         var key = ExtractKeyFromSegment(contract, segment);
         var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -121,7 +119,7 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeInfoResolver, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, serializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -135,11 +133,11 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
     public virtual bool TryTest(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         object value,
         out string errorMessage)
     {
-        var contract = typeInfoResolver.GetTypeInfo(target.GetType(), JsonSerializerOptions.Default);
+        var contract = serializerOptions.GetTypeInfo(target.GetType());
         var key = ExtractKeyFromSegment(contract, segment);
         var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -155,7 +153,7 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, typeInfoResolver, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, serializerOptions, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -182,11 +180,11 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
     public virtual bool TryTraverse(
         object target,
         string segment,
-        IJsonTypeInfoResolver typeInfoResolver,
+        JsonSerializerOptions serializerOptions,
         out object nextTarget,
         out string errorMessage)
     {
-        var contract = typeInfoResolver.GetTypeInfo(target.GetType(), JsonSerializerOptions.Default);
+        var contract = serializerOptions.GetTypeInfo(target.GetType());
         var key = ExtractKeyFromSegment(contract, segment);
         var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -240,9 +238,9 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
         return TryConvertValue(value, null, out convertedValue, out errorMessage);
     }
 
-    protected virtual bool TryConvertValue(object value, IJsonTypeInfoResolver typeInfoResolver, out TValue convertedValue, out string errorMessage)
+    protected virtual bool TryConvertValue(object value, JsonSerializerOptions serializerOptions, out TValue convertedValue, out string errorMessage)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(value, typeof(TValue), typeInfoResolver);
+        var conversionResult = ConversionResultProvider.ConvertTo(value, typeof(TValue), serializerOptions);
         if (conversionResult.CanBeConverted)
         {
             errorMessage = null;

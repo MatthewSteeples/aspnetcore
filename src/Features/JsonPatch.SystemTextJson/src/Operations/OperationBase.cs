@@ -42,7 +42,7 @@ public class OperationBase
             _op = value;
         }
     }
-    
+
     [JsonPropertyName(nameof(from))]
     public string from { get; set; }
 
@@ -60,7 +60,7 @@ public class OperationBase
         this.from = from;
     }
 
-    public bool ShouldSerializefrom()
+    public bool ShouldSerializeFrom()
     {
         return (OperationType == OperationType.Move
             || OperationType == OperationType.Copy);
