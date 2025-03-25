@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 // when producing a JsonPatchDocument.  However, we cannot send this "typed" over the wire, as that would require
 // including type data in the JsonPatchDocument serialized as JSON (to allow for correct deserialization) - that's
 // not according to RFC 6902, and would thus break cross-platform compatibility.
-[JsonConverter(typeof(TypedJsonPatchDocumentConverter))]
+[JsonConverter(typeof(JsonPatchDocumentConverterFactory))]
 public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
 {
     public List<Operation<TModel>> Operations { get; private set; }
