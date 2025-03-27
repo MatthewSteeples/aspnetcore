@@ -23,16 +23,18 @@ public class HeterogenousCollectionTests
         };
 
         var circleJObject = JsonObject.Parse(@"{
-              Type: 'Circle',
-              ShapeProperty: 'Shape property',
-              CircleProperty: 'Circle property'
-            }");
+                      ""Type"": ""Circle"",
+                      ""ShapeProperty"": ""Shape property"",
+                      ""CircleProperty"": ""Circle property""
+                    }");
+
+        var serializerOptions = new JsonSerializerOptions();
+        serializerOptions.TypeInfoResolver = new CanvasContractResolver();
 
         var patchDocument = new JsonPatchDocument
         {
-            SerializerOptions = JsonSerializerOptions.Default
+            SerializerOptions = serializerOptions
         };
-        patchDocument.SerializerOptions.TypeInfoResolverChain.Add(new CanvasContractResolver());
 
         patchDocument.Add("/Items/-", circleJObject);
 
@@ -55,23 +57,21 @@ public class CanvasContractResolver : DefaultJsonTypeInfoResolver
         var jsonTypeInfo = base.GetTypeInfo(type, options);
 
         // Check if the type is Shape or derives from it.
-        if (typeof(Shape).IsAssignableFrom(type))
+        if (jsonTypeInfo.Type == typeof(Shape))
         {
             // Configure polymorphism options if they haven't been set yet.
             if (jsonTypeInfo.PolymorphismOptions == null)
             {
                 jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
                 {
-                    // Decide how to handle unknown derived types (fail in this example).
-                    UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization
+                    TypeDiscriminatorPropertyName = "Type",
+                    IgnoreUnrecognizedTypeDiscriminators = true,
+                    UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
+                    DerivedTypes = {
+                        new JsonDerivedType(typeof(Circle), "Circle"),
+                        new JsonDerivedType(typeof(Rectangle), "Rectangle")
+                    }
                 };
-            }
-
-            // Only on the base abstract type, register known derived types.
-            if (type == typeof(Shape))
-            {
-                jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(new JsonDerivedType(typeof(Circle), "circle"));
-                jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(new JsonDerivedType(typeof(Rectangle), "rectangle"));
             }
         }
 
