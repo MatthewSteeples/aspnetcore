@@ -66,12 +66,7 @@ public class ListAdapter : IAdapter
             return false;
         }
 
-        var valueIndex = targetCollectionCount;
-        if (positionInfo.Type == PositionType.EndOfList)
-        {
-            valueIndex--;
-        }
-
+        var valueIndex = positionInfo.Type == PositionType.EndOfList ? targetCollectionCount - 1 : positionInfo.Index;
         value = GenericListOrJsonArrayUtilities.GetElementAt(target, valueIndex);
 
         errorMessage = null;
