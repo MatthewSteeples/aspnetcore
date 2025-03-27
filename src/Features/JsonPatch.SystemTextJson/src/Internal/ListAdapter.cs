@@ -20,14 +20,13 @@ public class ListAdapter : IAdapter
     #region Existing implementation
     public virtual bool TryAdd(object target, string segment, JsonSerializerOptions jsonSerializerOptions, object value, out string errorMessage)
     {
-        var list = (IList)target;
-
-        if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
+        if (!TryGetListTypeArgument(target, out var typeArgument, out errorMessage))
         {
             return false;
         }
 
-        if (!TryGetPositionInfo(list.Count, segment, OperationType.Add, out var positionInfo, out errorMessage))
+        var targetCollectionCount = GenericListOrJsonArrayUtilities.GetCount(target);
+        if (!TryGetPositionInfo(targetCollectionCount, segment, OperationType.Add, out var positionInfo, out errorMessage))
         {
             return false;
         }
@@ -39,11 +38,11 @@ public class ListAdapter : IAdapter
 
         if (positionInfo.Type == PositionType.EndOfList)
         {
-            list.Add(convertedValue as JsonNode);
+            GenericListOrJsonArrayUtilities.AddElement(target, convertedValue);
         }
         else
         {
-            list.Insert(positionInfo.Index, convertedValue as JsonNode);
+            GenericListOrJsonArrayUtilities.InsertElementAt(target, positionInfo.Index, convertedValue);
         }
 
         errorMessage = null;

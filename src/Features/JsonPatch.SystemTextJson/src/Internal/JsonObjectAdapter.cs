@@ -122,7 +122,7 @@ public class JsonObjectAdapter : IAdapter
         out object nextTarget,
         out string errorMessage)
     {
-        var obj = (JsonObject)JsonSerializer.SerializeToNode(target, serializerOptions);
+        var obj = (JsonObject)target;
 
         if (!obj.TryGetPropertyValue(segment, out var nextTargetToken))
         {

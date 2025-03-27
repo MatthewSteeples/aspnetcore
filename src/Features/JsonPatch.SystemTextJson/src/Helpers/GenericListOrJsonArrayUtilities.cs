@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers;
@@ -17,9 +16,9 @@ internal static class GenericListOrJsonArrayUtilities
             return nonGenericList[index];
         }
 
-        if (list is IList<object> genericList)
+        if (list is JsonArray array)
         {
-            return genericList[index];
+            return array[index];
         }
 
         throw new InvalidOperationException($"Unsupported list type: {list.GetType()}");
@@ -31,12 +30,14 @@ internal static class GenericListOrJsonArrayUtilities
         {
             nonGenericList[index] = value;
         }
-        else if (list is IList<object> genericList)
+        else if (list is JsonArray array)
         {
-            genericList[index] = value;
+            array[index] = (JsonNode)value;
         }
-
-        throw new InvalidOperationException($"Unsupported list type: {list.GetType()}");
+        else
+        {
+            throw new InvalidOperationException($"Unsupported list type: {list.GetType()}");
+        }
     }
 
     internal static int GetCount(object list)
@@ -51,11 +52,6 @@ internal static class GenericListOrJsonArrayUtilities
             return jsonArray.Count;
         }
 
-        if (list is IList<object> genericList)
-        {
-            return genericList.Count;
-        }
-
         throw new InvalidOperationException($"Unsupported list type: {list.GetType()}");
     }
 
@@ -65,9 +61,41 @@ internal static class GenericListOrJsonArrayUtilities
         {
             nonGenericList.RemoveAt(index);
         }
-        else if (list is IList<object> genericList)
+        else if (list is JsonArray array)
         {
-            genericList.RemoveAt(index);
+            array.RemoveAt(index);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported list type: {list.GetType()}");
+        }
+    }
+
+    internal static void InsertElementAt(object list, int index, object value)
+    {
+        if (list is IList nonGenericList)
+        {
+            nonGenericList.Insert(index, value);
+        }
+        else if (list is JsonArray array)
+        {
+            array.Insert(index, (JsonNode)value);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported list type: {list.GetType()}");
+        }
+    }
+
+    internal static void AddElement(object list, object value)
+    {
+        if (list is IList nonGenericList)
+        {
+            nonGenericList.Add(value);
+        }
+        else if (list is JsonArray array)
+        {
+            array.Add(value);
         }
         else
         {
