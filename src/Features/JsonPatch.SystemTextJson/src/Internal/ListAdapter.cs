@@ -112,7 +112,7 @@ public class ListAdapter : IAdapter
         }
 
         var indexToAddTo = positionInfo.Type == PositionType.EndOfList ? count - 1 : positionInfo.Index;
-        GenericListOrJsonArrayUtilities.SetValueAt(target, indexToAddTo, JsonValue.Create(convertedValue));
+        GenericListOrJsonArrayUtilities.SetValueAt(target, indexToAddTo, convertedValue);
 
         errorMessage = null;
         return true;
