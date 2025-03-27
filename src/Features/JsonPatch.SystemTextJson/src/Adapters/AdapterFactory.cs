@@ -25,6 +25,7 @@ public class AdapterFactory : IAdapterFactory
         return target switch
         {
             JsonObject => new JsonObjectAdapter(),
+            JsonArray => new ListAdapter(),
             IList => new ListAdapter(),
             _ => new PocoAdapter()
         };

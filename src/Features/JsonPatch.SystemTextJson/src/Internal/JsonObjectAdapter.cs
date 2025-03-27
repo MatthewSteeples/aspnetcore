@@ -18,7 +18,7 @@ public class JsonObjectAdapter : IAdapter
         // Set the property specified by the `segment` argument to the given `value` of the `target` object.
         var obj = (JsonObject)target;
 
-        obj[segment] = value != null ? JsonSerializer.SerializeToNode(value, serializerOptions) : new JsonObject();
+        obj[segment] = value != null ? JsonSerializer.SerializeToNode(value, serializerOptions) : GetJsonNull();
 
         errorMessage = null;
         return true;
@@ -78,7 +78,7 @@ public class JsonObjectAdapter : IAdapter
             return false;
         }
 
-        obj[segment] = value != null ? JsonSerializer.SerializeToNode(value) : new JsonObject();
+        obj[segment] = value != null ? JsonSerializer.SerializeToNode(value) : GetJsonNull();
 
         errorMessage = null;
         return true;
@@ -135,4 +135,6 @@ public class JsonObjectAdapter : IAdapter
         errorMessage = null;
         return true;
     }
+
+    private static JsonValue GetJsonNull() => JsonValue.Create<object?>(null);
 }

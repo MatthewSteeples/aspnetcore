@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -23,23 +24,28 @@ public static class ConversionResultProvider
         {
             return new ConversionResult(IsNullableType(typeToConvertTo), null);
         }
-        else if (typeToConvertTo.IsAssignableFrom(value.GetType()))
+
+        if (typeToConvertTo.IsAssignableFrom(value.GetType()))
         {
             // No need to convert
             return new ConversionResult(true, value);
         }
-        else
+
+        // Workaround for the https://github.com/dotnet/runtime/issues/113926
+        if (typeToConvertTo.Name == "JsonValuePrimitive`1")
         {
-            try
-            {
-                var serializedDocument = JsonSerializer.SerializeToDocument(value, jsonSerializerOptions);
-                var deserialized = JsonSerializer.Deserialize(serializedDocument, typeToConvertTo, jsonSerializerOptions);
-                return new ConversionResult(true, deserialized);
-            }
-            catch
-            {
-                return new ConversionResult(canBeConverted: false, convertedInstance: null);
-            }
+            typeToConvertTo = typeof(JsonNode);
+        }
+
+        try
+        {
+            var serializedDocument = JsonSerializer.Serialize(value, jsonSerializerOptions);
+            var deserialized = JsonSerializer.Deserialize(serializedDocument, typeToConvertTo, jsonSerializerOptions);
+            return new ConversionResult(true, deserialized);
+        }
+        catch (Exception ex)
+        {
+            return new ConversionResult(canBeConverted: false, convertedInstance: null);
         }
     }
 
@@ -50,17 +56,25 @@ public static class ConversionResultProvider
         {
             return new ConversionResult(canBeConverted: true, convertedInstance: null);
         }
-        else if (typeToConvertTo.IsAssignableFrom(value.GetType()))
+
+        if (typeToConvertTo != value.GetType() && typeToConvertTo.IsAssignableFrom(value.GetType()))
         {
             // Keep original type
             targetType = value.GetType();
         }
+
+        // Workaround for the https://github.com/dotnet/runtime/issues/113926
+        if (targetType.Name == "JsonValuePrimitive`1")
+        {
+            targetType = typeof(JsonNode);
+        }
+
         try
         {
-            var deserialized = JsonSerializer.Deserialize(JsonSerializer.SerializeToDocument(value), targetType);
+            var deserialized = JsonSerializer.Deserialize(JsonSerializer.Serialize(value), targetType);
             return new ConversionResult(true, deserialized);
         }
-        catch
+        catch (Exception ex)
         {
             return new ConversionResult(canBeConverted: false, convertedInstance: null);
         }
@@ -73,10 +87,8 @@ public static class ConversionResultProvider
             // value types are only nullable if they are Nullable<T>
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
-        else
-        {
-            // reference types are always nullable
-            return true;
-        }
+
+        // reference types are always nullable
+        return true;
     }
 }
