@@ -128,7 +128,7 @@ public class ListAdapterTest
         var listAdapter = new ListAdapter();
 
         // Act
-        var addStatus = listAdapter.TryAdd(targetObject, "-", serializerOptions, "20", out var message);
+        var addStatus = listAdapter.TryAdd(targetObject, "-", serializerOptions, 20, out var message);
 
         // Assert
         Assert.True(addStatus);
@@ -400,7 +400,7 @@ public class ListAdapterTest
         var listAdapter = new ListAdapter();
 
         // Act
-        var replaceStatus = listAdapter.TryReplace(targetObject, "-", serializerOptions, "30", out var message);
+        var replaceStatus = listAdapter.TryReplace(targetObject, "-", serializerOptions, 30, out var message);
 
         // Assert
         Assert.True(replaceStatus);
@@ -436,7 +436,7 @@ public class ListAdapterTest
         var listAdapter = new ListAdapter();
 
         // Act
-        var replaceStatus = listAdapter.TryReplace(targetObject, position, serializerOptions, "30", out var message);
+        var replaceStatus = listAdapter.TryReplace(targetObject, position, serializerOptions, 30, out var message);
 
         // Assert
         Assert.True(replaceStatus);
@@ -448,7 +448,9 @@ public class ListAdapterTest
     public void Test_DoesNotThrowException_IfTestIsSuccessful()
     {
         // Arrange
-        var serializerOptions = JsonSerializerOptions.Default;
+        var serializerOptions = new JsonSerializerOptions();
+        serializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
+
         var targetObject = new List<int>() { 10, 20 };
         var listAdapter = new ListAdapter();
 
@@ -470,7 +472,7 @@ public class ListAdapterTest
         var expectedErrorMessage = "The current value '20' at position '1' is not equal to the test value '10'.";
 
         // Act
-        var testStatus = listAdapter.TryTest(targetObject, "1", serializerOptions, "10", out var errorMessage);
+        var testStatus = listAdapter.TryTest(targetObject, "1", serializerOptions, 10, out var errorMessage);
 
         //Assert
         Assert.False(testStatus);

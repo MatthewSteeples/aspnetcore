@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
@@ -198,10 +199,10 @@ public class PocoAdapterTest
         // Arrange
         var adapter = new PocoAdapter();
         var contractResolver = new RectangleContractResolver();
-        var serializerOptions = new JsonSerializerOptions
-        {
-            TypeInfoResolver = contractResolver
-        };
+        var serializerOptions = new JsonSerializerOptions();
+        serializerOptions.Converters.Add(new RectangleJsonConverter());
+        serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+
         var model = new Square()
         {
             Rectangle = new Rectangle()
@@ -214,8 +215,9 @@ public class PocoAdapterTest
         var replaceStatus = adapter.TryReplace(model, "Rectangle", serializerOptions, "Oval", out var errorMessage);
 
         // Assert
-        Assert.Equal("Oval", model.Rectangle.RectangleProperty);
         Assert.True(replaceStatus);
+        Assert.Equal("Oval", model.Rectangle.RectangleProperty);
+        Assert.Null(errorMessage);
     }
 
     [Fact]

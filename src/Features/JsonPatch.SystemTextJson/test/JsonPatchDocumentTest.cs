@@ -152,9 +152,8 @@ public class JsonPatchDocumentTest
         // Act
         var exception = Assert.Throws<JsonException>(() =>
         {
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new TypedJsonPatchDocumentConverter());
-            options.Converters.Add(new JsonPatchDocumentConverter());
+            var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            options.Converters.Add(new JsonConverterForJsonPatchDocumentOfT<SimpleObject>());
             var deserialized
                 = JsonSerializer.Deserialize<JsonPatchDocument<SimpleObject>>(serialized, options);
         });
