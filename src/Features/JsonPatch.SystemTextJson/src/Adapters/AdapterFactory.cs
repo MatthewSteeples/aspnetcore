@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 using Microsoft.AspNetCore.Shared;
@@ -21,6 +23,12 @@ public class AdapterFactory : IAdapterFactory
 #pragma warning restore PUB0001
     {
         ArgumentNullThrowHelper.ThrowIfNull(target);
+
+        var typeToConvert = target.GetType();
+        if (typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+        {
+            return (IAdapter)Activator.CreateInstance(typeof(DictionaryAdapter<,>).MakeGenericType(typeToConvert.GenericTypeArguments[0], typeToConvert.GenericTypeArguments[1]));
+        }
 
         return target switch
         {
