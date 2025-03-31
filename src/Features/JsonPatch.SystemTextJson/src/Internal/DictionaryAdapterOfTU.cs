@@ -218,7 +218,8 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
 
     protected virtual bool TryConvertKey(string key, out TKey convertedKey, out string errorMessage)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(key, typeof(TKey));
+        var options = new JsonSerializerOptions() { NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString };
+        var conversionResult = ConversionResultProvider.ConvertTo(key, typeof(TKey), options);
         if (conversionResult.CanBeConverted)
         {
             errorMessage = null;
